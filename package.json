@@ -1,0 +1,29 @@
+{
+  "name": "bb",
+  "version": "1.0.0",
+  "description": "Build bot",
+  "main": "bb.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danio/bb.git"
+  },
+  "keywords": [
+    "build",
+    "test",
+    "ci"
+  ],
+  "author": "danio",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danio/bb/issues"
+  },
+  "homepage": "https://github.com/danio/bb#readme",
+  "dependencies": {
+    "chokidar": "^1.6.1",
+    "console-stamp": "^0.2.4",
+    "underscore": "^1.8.3"
+  }
+}
