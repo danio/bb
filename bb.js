@@ -61,11 +61,12 @@ function createStep(processor, nextStep) {
   return step;
 }
 
+var commandProcessors = commands.map(createCommandProcessor);
+
 var nextStep = function() {
   console.log('All steps completed successfully');
 };
-commands.reverse().forEach(function(command) {
-  var processor = createCommandProcessor(command);
+commandProcessors.reverse().forEach(function(processor) {
   nextStep = createStep(processor, nextStep);
   steps.unshift(nextStep);
 });
