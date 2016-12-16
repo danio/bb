@@ -13,7 +13,53 @@ The processors are functions that each return whether they have succeeded.
 If any processor fails, the remaining processors will not be executed.
 
 There are some helper processor creators and watchers provided.
-A simple example script of how all these can be put together:
+
+### Examples
+
+#### Hello world
+
+A trivial example that will watch a directory
+provided on the command line:
+
+```
+"use strict";
+
+// add timestamps in front of log messages
+require('console-stamp')(console, 'HH:MM:ss');
+
+var bb = require('../bb.js');
+var fs = require('fs')
+
+var progArgs = process.argv.slice(2);
+var sourceDir = progArgs[0];
+
+var processors = [
+  function() {
+    console.log('Hello');
+    return true;
+  },
+  function() {
+    console.log('World');
+    return true;
+  }
+];
+bb.create(processors);
+
+fs.watch(sourceDir, function(eventType) { bb.handleChange(); });
+```
+
+To run it:
+```
+node examples/hello_world.js <DIR_TO_WATCH>
+```
+
+Whenever a file in the directory changes, Hello World
+will be printed.
+
+#### Commands and chokidar
+
+A more useful example script, that uses the helpers to watch a directory
+and run some tests:
 
 ```
 var bb = require('./bb.js');
