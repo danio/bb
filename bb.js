@@ -13,47 +13,67 @@ console.log(source_dir)
 
 var commands = [
   'bash ../Script/CheckCode.sh',
-  'nosetests --attr=!slow',
+  'nosetests -s --attr=!slow',
   'behave -k --tags=~skip IntegrationTest/ -t ~@slow',
-  'nosetests --attr=slow,!glacial',
-  'nosetests --attr=glacial',
+  'nosetests -s --attr=slow,!glacial',
+  'nosetests -s --attr=glacial',
   'behave -k --tags=~skip IntegrationTest/ -t @slow'
 ];
 
 var chokidar = require('chokidar');
 var watcher = chokidar.watch(source_dir, {ignored: /^\.|node_modules|\_pycache|.vs/, persistent: true});
-var paths = [];
+var steps = [];
+var updateTime;
 watcher
   .on('add', function(path) {handleChange(path, 'added');})
   .on('change', function(path) {handleChange(path, 'changed');})
   .on('unlink', function(path) {handleChange(path, 'removed');})
   .on('error', function(error) {console.error('Error happened', error);})
 
-function handleChange(path, change_type) {
-  //console.log('File', path, 'has been', change_type);
-  paths.push(path);
-  var pathsAtStart = paths.slice();
-  // Note that paths isn't captured until the timeout has elapsed
-  setTimeout(function(){
-    if (_.isEqual(pathsAtStart, paths)) {
-      processChange(paths);
-      paths = [];
-    }
-  }, 100);
+function createStep(command, nextStep) {
+  var step = function(startTime) {
+        var promise = new Promise(function(resolve, reject){
+          setTimeout(function(){
+            if (startTime >= updateTime) {
+              var exec = require('child_process').execSync;
+              try {
+                console.log(command);
+                exec(command, {'cwd': source_dir});
+                resolve(startTime);
+              }
+              catch(err) {
+                console.log(String(err.stdout))
+                console.log(err.cmd, 'Failed with error', err.status);
+              }
+            }
+            else {
+              console.log('Files changed, restarting from first step');
+            }
+          }, 100);
+        });
+        return promise.then(nextStep);
+      }
+  return step;
 }
 
-function processChange(paths) {
-  console.log('Processing due to change in', paths);
-  var exec = require('child_process').execSync;
-  try {
-    commands.forEach(function(command) {
-      console.log(command);
-      var result = exec(command, {'cwd': source_dir});
-    });
-    console.log('All steps completed successfully');
-  }
-  catch(err) {
-    console.log(String(err.stdout))
-    console.log(err.cmd, 'Failed with error', err.status);
-  }
+var nextStep = null;
+commands.reverse().forEach(function(command) {
+  nextStep = createStep(command, nextStep);
+  steps.unshift(nextStep);
+});
+
+function handleChange(path, change_type) {
+  //console.log('File', path, 'has been', change_type);
+  updateTime = Date.now();
+  //console.log('updateTime', updateTime);
+  //console.log('startTime', startTime);
+  var startTime = Date.now();
+  setTimeout(function(){
+    //console.log('startTime', startTime, 'updateTime', updateTime);
+    if (startTime >= updateTime) {
+      //console.log('startTime', startTime, 'updateTime', updateTime);
+      console.log('Files changed, processing');
+      steps[0](startTime);
+    }
+  }, 100);
 }
