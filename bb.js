@@ -61,7 +61,9 @@ function createStep(processor, nextStep) {
   return step;
 }
 
-var nextStep = null;
+var nextStep = function() {
+  console.log('All steps completed successfully');
+};
 commands.reverse().forEach(function(command) {
   var processor = createCommandProcessor(command);
   nextStep = createStep(processor, nextStep);
