@@ -1,8 +1,8 @@
 "use strict";
 
-exports.watch = function(sourceDir, ignores, changeHandler) {
+exports.watch = function(watchedDir, ignores, changeHandler) {
   var chokidar = require('chokidar');
-  var watcher = chokidar.watch(sourceDir, {ignored: ignores, persistent: true});
+  var watcher = chokidar.watch(watchedDir, {ignored: ignores, persistent: true});
   watcher
     .on('add', function(path) {changeHandler(path, 'added');})
     .on('change', function(path) {changeHandler(path, 'changed');})

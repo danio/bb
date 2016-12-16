@@ -1,12 +1,13 @@
 "use strict";
 
+var execSync = require('child_process').execSync;
+
 function createCommandProcessor(command) {
-  var sourceDir = this;
+  var workingDir = this;
   var processor = function() {
-    var exec = require('child_process').execSync;
     try {
       console.log(command);
-      exec(command, {'cwd': sourceDir});
+      execSync(command, {'cwd': workingDir});
       return true;
     }
     catch(err) {
@@ -18,6 +19,6 @@ function createCommandProcessor(command) {
   return processor;
 }
 
-exports.createCommandProcessors = function(commands, sourceDir) {
-  return commands.map(createCommandProcessor, sourceDir);
+exports.createCommandProcessors = function(commands, workingDir) {
+  return commands.map(createCommandProcessor, workingDir);
 }
