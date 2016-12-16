@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/danio/bb#readme",
   "dependencies": {
-    "chokidar": "^1.6.1",
-    "console-stamp": "^0.2.4"
+    "chokidar": "^1.6.1"
   }
 }
