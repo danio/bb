@@ -70,7 +70,11 @@ commands.reverse().forEach(function(command) {
 
 function handleChange(path, change_type) {
   //console.log('File', path, 'has been', change_type);
-  updateTime = Date.now();
+  var now = Date.now();
+  if (now == updateTime) {
+    return;
+  }
+  updateTime = now;
   //console.log('updateTime', updateTime);
   //console.log('startTime', startTime);
   var startTime = Date.now();
