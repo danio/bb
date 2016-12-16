@@ -77,13 +77,9 @@ function handleChange(path, change_type) {
     return;
   }
   updateTime = now;
-  //console.log('updateTime', updateTime);
-  //console.log('startTime', startTime);
   var startTime = Date.now();
   setTimeout(function(){
-    //console.log('startTime', startTime, 'updateTime', updateTime);
     if (startTime >= updateTime) {
-      //console.log('startTime', startTime, 'updateTime', updateTime);
       console.log('Files changed, processing');
       steps[0](startTime);
     }
