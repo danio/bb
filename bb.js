@@ -1,6 +1,5 @@
 "use strict";
 
-var _ = require('underscore');
 // add timestamps in front of log messages
 require('console-stamp')(console, 'HH:MM:ss');
 
