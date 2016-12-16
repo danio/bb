@@ -30,35 +30,41 @@ watcher
   .on('unlink', function(path) {handleChange(path, 'removed');})
   .on('error', function(error) {console.error('Error happened', error);})
 
-function createStep(command, nextStep) {
-  var step = function(startTime) {
-        var promise = new Promise(function(resolve, reject){
-          setTimeout(function(){
-            if (startTime >= updateTime) {
-              var exec = require('child_process').execSync;
-              try {
-                console.log(command);
-                exec(command, {'cwd': source_dir});
-                resolve(startTime);
-              }
-              catch(err) {
-                console.log(String(err.stdout))
-                console.log(err.cmd, 'Failed with error', err.status);
-              }
-            }
-            else {
-              console.log('Files changed, restarting from first step');
-            }
-          }, 100);
-        });
-        return promise.then(nextStep);
+function createCommandProcessor(command) {
+  var processor = function(resolve, startTime) {
+    if (startTime >= updateTime) {
+      var exec = require('child_process').execSync;
+      try {
+        console.log(command);
+        exec(command, {'cwd': source_dir});
+        resolve(startTime);
       }
+      catch(err) {
+        console.log(String(err.stdout))
+        console.log(err.cmd, 'Failed with error', err.status);
+      }
+    }
+    else {
+      console.log('Files changed, restarting from first step');
+    }
+  };
+  return processor;
+}
+
+function createStep(processor, nextStep) {
+  var step = function(params) {
+    var promise = new Promise(function(resolve, reject){
+      setTimeout(function() {processor(resolve, params);}, 100);
+    });
+    return promise.then(nextStep);
+  }
   return step;
 }
 
 var nextStep = null;
 commands.reverse().forEach(function(command) {
-  nextStep = createStep(command, nextStep);
+  var processor = createCommandProcessor(command);
+  nextStep = createStep(processor, nextStep);
   steps.unshift(nextStep);
 });
 
