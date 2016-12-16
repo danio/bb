@@ -1,53 +1,20 @@
 "use strict";
 
-// add timestamps in front of log messages
-require('console-stamp')(console, 'HH:MM:ss');
-
-process.argv.forEach(function (val, index, array) {
-  console.log(index + ': ' + val);
-});
-var prog_args = process.argv.slice(2);
-var source_dir = prog_args[0];
-console.log(source_dir)
-
-var commands = [
-  'bash ../Script/CheckCode.sh',
-  'nosetests -s --attr=!slow',
-  'behave -k --tags=~skip IntegrationTest/ -t ~@slow',
-  'nosetests -s --attr=slow,!glacial',
-  'nosetests -s --attr=glacial',
-  'behave -k --tags=~skip IntegrationTest/ -t @slow'
-];
-
-var chokidar = require('chokidar');
-var watcher = chokidar.watch(source_dir, {ignored: /^\.|node_modules|\_pycache|.vs/, persistent: true});
 var steps = [];
 var updateTime;
-watcher
-  .on('add', function(path) {handleChange(path, 'added');})
-  .on('change', function(path) {handleChange(path, 'changed');})
-  .on('unlink', function(path) {handleChange(path, 'removed');})
-  .on('error', function(error) {console.error('Error happened', error);})
 
-function createCommandProcessor(command) {
-  var processor = function(resolve, startTime) {
+function wrapProcessor(processor) {
+  var wrapped = function(resolve, startTime) {
     if (startTime >= updateTime) {
-      var exec = require('child_process').execSync;
-      try {
-        console.log(command);
-        exec(command, {'cwd': source_dir});
+      if (processor()) {
         resolve(startTime);
-      }
-      catch(err) {
-        console.log(String(err.stdout))
-        console.log(err.cmd, 'Failed with error', err.status);
       }
     }
     else {
-      console.log('Files changed, restarting from first step');
-    }
+      console.log('Files changed, skipping remaining steps');
+    } 
   };
-  return processor;
+  return wrapped;
 }
 
 function createStep(processor, nextStep) {
@@ -60,17 +27,18 @@ function createStep(processor, nextStep) {
   return step;
 }
 
-var commandProcessors = commands.map(createCommandProcessor);
+exports.create = function(commandProcessors) {
+  var wrappedProcessors = commandProcessors.map(wrapProcessor);
+  var nextStep = function() {
+    console.log('All steps completed successfully');
+  };
+  wrappedProcessors.reverse().forEach(function(processor) {
+    nextStep = createStep(processor, nextStep);
+    steps.unshift(nextStep);
+  });
+}
 
-var nextStep = function() {
-  console.log('All steps completed successfully');
-};
-commandProcessors.reverse().forEach(function(processor) {
-  nextStep = createStep(processor, nextStep);
-  steps.unshift(nextStep);
-});
-
-function handleChange(path, change_type) {
+exports.handleChange = function(path, change_type) {
   //console.log('File', path, 'has been', change_type);
   var now = Date.now();
   if (now == updateTime) {
