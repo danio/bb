@@ -21,7 +21,7 @@
     "url": "https://github.com/danio/bb/issues"
   },
   "homepage": "https://github.com/danio/bb#readme",
-  "dependencies": {
+  "optionalDependencies": {
     "chokidar": "^1.6.1"
   }
 }
