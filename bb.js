@@ -53,3 +53,11 @@ exports.handleChange = function(path, change_type) {
     }
   }, 100);
 }
+
+exports.chokidar_watcher = function() {
+  return require('./chokidar_watcher.js');
+}
+
+exports.command_processor = function() {
+  return require('./command_processor.js');
+}

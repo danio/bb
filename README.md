@@ -19,20 +19,34 @@ There are some helper processor creators and watchers provided.
 #### Hello world
 
 A trivial example that will watch a directory
-provided on the command line:
+provided on the command line.
 
+First install required packages:
+```
+npm install dpbb
+npm install console-stamp
+```
+
+Save the following as hello_world.js:
 ```
 "use strict";
 
 // add timestamps in front of log messages
 require('console-stamp')(console, 'HH:MM:ss');
 
-var bb = require('../bb.js');
+var bb = require('dpbb');
 var fs = require('fs')
 
+// Get directory from command line argument
 var progArgs = process.argv.slice(2);
 var sourceDir = progArgs[0];
+if (!sourceDir) {
+  console.log('Directory must be specified.');
+  process.exit()
+}
 
+// Create a chain of processors, that together
+// will print Hello World
 var processors = [
   function() {
     console.log('Hello');
@@ -45,12 +59,13 @@ var processors = [
 ];
 bb.create(processors);
 
+// Start watching the directory with the processor chain
 fs.watch(sourceDir, function(eventType) { bb.handleChange(); });
 ```
 
-To run it:
+Run it:
 ```
-node examples/hello_world.js <DIR_TO_WATCH>
+node hello_world.js <DIR_TO_WATCH>
 ```
 
 Whenever a file in the directory changes, Hello World
@@ -62,13 +77,15 @@ A more useful example script, that uses the helpers to watch a directory
 and run some tests:
 
 ```
-var bb = require('./bb.js');
-var command_processor = require('./command_processor.js');
-var chokidar_watcher = require('./chokidar_watcher.js');
+var bb = require('dpbb');
 
 // Argument is the directory to monitor
 var progArgs = process.argv.slice(2);
 var sourceDir = progArgs[0];
+if (!sourceDir) {
+  console.log('Directory must be specified.');
+  process.exit()
+}
 
 // Some commands to run in the following order
 var commands = [
@@ -77,11 +94,11 @@ var commands = [
 ];
 
 // first create the processors
-var processors = command_processor.createCommandProcessors(commands, sourceDir);
+var processors = bb.command_processor().createCommandProcessors(commands, sourceDir);
 bb.create(processors);
 
 // now start watching the directory for changes
 // ignores is a regular expression to ignore changes on,
 // here we have files starting with ., python cache and visual studio generated files
-chokidar_watcher.watch(sourceDir, /^\.|\_pycache|.vs/, bb.handleChange);
+bb.chokidar_watcher().watch(sourceDir, /^\.|\_pycache|.vs/, bb.handleChange);
 ```
