@@ -2,7 +2,7 @@
 A local 'CI-like' Node.js app
 
 ## Installing
-npm install
+npm install dpbb
 
 ## Using
 
