@@ -54,10 +54,5 @@ exports.handleChange = function(path, change_type) {
   }, 100);
 }
 
-exports.chokidar_watcher = function() {
-  return require('./chokidar_watcher.js');
-}
-
-exports.command_processor = function() {
-  return require('./command_processor.js');
-}
+exports.chokidar_watcher = require('./chokidar_watcher.js');
+exports.command_processor = require('./command_processor.js');

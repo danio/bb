@@ -94,11 +94,11 @@ var commands = [
 ];
 
 // first create the processors
-var processors = bb.command_processor().createCommandProcessors(commands, sourceDir);
+var processors = bb.command_processor.createCommandProcessors(commands, sourceDir);
 bb.create(processors);
 
 // now start watching the directory for changes
 // ignores is a regular expression to ignore changes on,
 // here we have files starting with ., python cache and visual studio generated files
-bb.chokidar_watcher().watch(sourceDir, /^\.|\_pycache|.vs/, bb.handleChange);
+bb.chokidar_watcher.watch(sourceDir, /^\.|\_pycache|.vs/, bb.handleChange);
 ```
